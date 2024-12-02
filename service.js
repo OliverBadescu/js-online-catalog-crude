@@ -100,7 +100,106 @@ export async function createUser(user){
    }
 }
 
+export async function updateUser(userId,user){
 
+    try{
+
+
+        let response= await apiUser(`update/${userId}`,"PUT",user);
+
+
+        if (response.ok) {
+           let data = await response.json();
+           return { success: true, data }; 
+       } else {
+           let error = await response.json();
+           return { success: false, message: error.message }; 
+       }
+
+   }catch(err){
+
+       return { success: false, message: "An error occurred while updating the user." };
+   }
+}
+
+
+export async function deleteUser(userId){
+
+    try{
+
+
+        let response= await apiUser(`delete/${userId}`,"DELETE");
+
+
+        if (response.ok) {
+           let data = await response.json();
+           return { success: true, data }; 
+       } else {
+           let error = await response.json();
+           return { success: false, message: error.message }; 
+       }
+
+   }catch(err){
+
+       return { success: false, message: "An error occurred while deleting the user." };
+   }
+}
+
+
+export async function getGradeById(gradeId){
+    try{
+
+       
+        let response= await apiGrade(`getGradeById/${gradeId}`);
+        if (response.ok) {
+            return await response.json(); 
+        } else {
+            return { success: false, message: "Failed to fetch user data." };
+        }
+
+    }catch(err){
+        return { success: false, message: "An error occurred while getting the grade data." };
+
+    }
+}
+
+export async function updateGrade(gradeId,gradeResponse){
+
+    try{
+
+       
+        let response= await apiGrade(`update/${gradeId}`, "PUT", gradeResponse);
+        if (response.ok) {
+            return await response.json(); 
+        } else {
+            return { success: false, message: "Failed to fetch user data." };
+        }
+
+    }catch(err){
+        return { success: false, message: "An error occurred while getting the grade data." };
+
+    }
+
+}
+
+export async function deleteGrade(gradeId){
+
+    try{
+
+       
+        let response= await apiGrade(`delete/${gradeId}`, "DELETE");
+        if (response.ok) {
+            return await response.json(); 
+        } else {
+            return { success: false, message: "Failed to fetch user data." };
+        }
+
+    }catch(err){
+        return { success: false, message: "An error occurred while getting the grade data." };
+
+    }
+
+}
 
 function apiUser(path, method = "GET", body = null) {
     const url = "http://localhost:8080/user/" + path;

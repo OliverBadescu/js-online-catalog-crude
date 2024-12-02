@@ -1,6 +1,6 @@
-import { getAllStudents, getUserById, getUsersGrades, createGrade, createUser } from "./service.js";
+import { getAllStudents, getUserById, getUsersGrades, createGrade, createUser,getGradeById, updateGrade,deleteGrade,updateUser,deleteUser } from "./service.js";
 
-// Create Home Page
+
 export function createHomePage() {
     loadUsers();
     let container = document.querySelector(".container");
@@ -13,6 +13,7 @@ export function createHomePage() {
             <tr>
                 <th>Full name</th>
                 <th>Email</th>
+                <th>Password</th>
                 <th>Phone Number</th>
                 <th>Grades</th>
             </tr>
@@ -31,18 +32,18 @@ export function createHomePage() {
     tbody.addEventListener('click', async (event) => {
         let user = event.target;
         
-        // View user details on click
+
         if (user.classList.contains("user-link")) {
             const userId = user.getAttribute("data-id"); 
             const userData = await getUserById(userId); 
+            
             if (userData) {
-                createUserPage(userData);
+                createUpdateDeleteUserPage(userData);
             } else {
                 alert("Failed to load user details");
             }
         }
 
-        // View grades on click
         if (user.classList.contains("grade-link")) {
             const userId = user.getAttribute("data-id"); 
             const userData = await getUserById(userId); 
@@ -53,7 +54,7 @@ export function createHomePage() {
     });
 }
 
-// Create Add User Page
+
 export function createAddUserPage() {
     let container = document.querySelector(".container");
 
@@ -70,8 +71,12 @@ export function createAddUserPage() {
             <input name="email" type="email" id="email">
         </p>
         <p>
+            <label for="password">Password</label>
+            <input name="password" type="password" id="password">
+        </p>
+        <p>
             <label for="phone">Phone</label>
-            <input name="phone" type="tel" id="phone">
+            <input name="phone" type="number" id="phone">
         </p>
         <div class="buttons-container">
             <button id="submit" disabled>Create New Student</button>
@@ -83,6 +88,7 @@ export function createAddUserPage() {
     const inputs = {
         fullName: document.querySelector('#fullName'),
         email: document.querySelector('#email'),
+        password: document.querySelector('#password'),
         phone: document.querySelector('#phone')
     };
 
@@ -101,8 +107,10 @@ export function createAddUserPage() {
         const userData = {
             fullName: inputs.fullName.value,
             email: inputs.email.value,
+            password: inputs.password.value,
             phone: inputs.phone.value
         };
+
 
         const result = await createUser(userData);
         if (result.success) {
@@ -120,6 +128,86 @@ export function createAddUserPage() {
     updateErrors(inputs, errorContainer, btnSubmit);
 }
 
+export function createUpdateDeleteUserPage(user){
+    let container = document.querySelector(".container");
+
+    container.innerHTML = `
+    
+    <h1>Update Student</h1>
+    <div class = "update-container">
+        <p>
+            <label for="name">Full name</label>
+            <input name="name" type="text" id="name" value=${user.fullName}>
+        </p>
+        <p>
+            <label for="email">Email</label>
+            <input name="email" type="email" id="email" value=${user.email}>
+        </p>
+        <p>
+            <label for="password">Password</label>
+            <input name="password" type="password" id="password" value =${user.password}>
+        </p>
+        <p>
+            <label for="phone">Phone</label>
+            <input name="phone" type="number" id="phone" value=${user.phone}>
+        </p>
+        <div class = "buttons-container">
+        <button id="update-student">Update Student</button>
+        <button id="cancel">Cancel</button>
+        <button id="delete">Delete Student</button>
+        </div>
+    </div>
+
+    `
+
+    let cancel = document.querySelector('#cancel');
+
+    cancel.addEventListener('click', () =>{
+
+        createHomePage();
+    });
+
+    let update = document.querySelector('#update-student');
+
+
+    update.addEventListener('click', () =>{
+
+        const fullName = document.querySelector('#name').value;
+        const email = document.querySelector('#email').value;
+        const password = document.querySelector('#password').value;
+        const phone = document.querySelector('#phone').value;
+        
+
+        const userResponse = {
+
+            fullName: fullName,
+            email: email,
+            password: password,
+            phone: phone
+        };
+
+
+        updateUser(user.id, userResponse);
+
+
+
+        alert("Student update sucessfully");
+        createHomePage();
+
+    });
+
+    let deleteBtn = document.querySelector('#delete');
+
+    deleteBtn.addEventListener('click', () =>{
+
+        deleteUser(user.id);
+        alert("Student deleted succesfully!");
+        createHomePage();
+    });
+
+
+
+}
 
 export function createGradePage(user) {
     let container = document.querySelector(".container");
@@ -148,6 +236,96 @@ export function createGradePage(user) {
     document.querySelector(".return-home").addEventListener("click", createHomePage);
     let addBtn = document.querySelector(".add-grade");
     addBtn.addEventListener("click", () => createAddGradePage(user));
+
+
+    let tbody = document.querySelector('.table-body');
+    tbody.addEventListener('click', async (event) => {
+        let grade = event.target;
+        
+
+
+        if (grade.classList.contains("edit-grade")) {
+            const gradeId = grade.getAttribute("data-id"); 
+            const gradeData = await getGradeById(gradeId); 
+            if (gradeData) {
+                createUpdateGradePage(gradeData,user);
+            }
+        }
+    });
+}
+
+export function createUpdateGradePage(grade,user){
+
+    let container = document.querySelector(".container");
+
+    container.innerHTML = `
+    
+    <h1>Update Grade</h1>
+    <div class = "update-container">
+        <p>
+            <label for="grade">Grade</label>
+            <input name="grade" type="number" id="grade" value=${grade.grade}>
+        </p>
+        <p>
+            <label for="title">Feedback title</label>
+            <input name="title" type="text" id="title" value=${grade.feedback.title}>
+        </p>
+        <p>
+            <label for="message">Feedback message</label>
+            <input name="message" type="text" id="message" value=${grade.feedback.message}>
+        </p>
+        <div class = "buttons-container">
+        <button id="update-grade">Update Grade</button>
+        <button id="cancel">Cancel</button>
+        <button id="delete">Delete Grade</button>
+        </div>
+    </div>
+
+    `
+
+    let cancel = document.querySelector('#cancel');
+
+    cancel.addEventListener('click', () =>{
+
+        createGradePage(user);
+    });
+
+    let update = document.querySelector('#update-grade');
+
+
+    update.addEventListener('click', () =>{
+
+        const gradeValue = document.querySelector('#grade').value;
+        const feedbackData = {
+            title: document.querySelector('#title').value,
+            message: document.querySelector('#message').value
+        };
+
+        const gradeResponse = {
+
+            grade: gradeValue,
+            feedback: feedbackData
+        };
+
+
+        updateGrade(grade.id, gradeResponse);
+
+
+
+        alert("Grade update sucessfully");
+        createGradePage(user);
+
+    });
+
+    let deleteBtn = document.querySelector('#delete');
+
+    deleteBtn.addEventListener('click', () =>{
+
+        deleteGrade(grade.id);
+        alert("Grade deleted succesfully!");
+        createGradePage(user);
+    });
+
 }
 
 export function createAddGradePage(user) {
@@ -257,6 +435,7 @@ function createUserCard(user) {
     tr.innerHTML = `
         <td><a href="#" data-id="${user.id}" class="user-link">${user.fullName}</a></td>
         <td>${user.email}</td>
+        <td>${user.password}</td>
         <td>${user.phone}</td>
         <td><a href="#" data-id="${user.id}" class="grade-link">View Grades</a></td>
     `;
@@ -282,15 +461,6 @@ async function loadUsers() {
     }
 }
 
-
-async function getUser(userId) {
-    try {
-        let userData = await getUserById(userId);
-        return userData;
-    } catch (err) {
-        console.log(err);
-    }
-}
 
 function updateErrors(inputs, errorContainer, btnSubmit) {
     const errors = validateInputs(inputs);
