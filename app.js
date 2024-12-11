@@ -1,4 +1,4 @@
-import { createHomePage } from "./functions.js";
+import { createLoginPage } from "./functions.js";
 
 
-createHomePage();
+createLoginPage();

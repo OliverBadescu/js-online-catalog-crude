@@ -1,5 +1,59 @@
-import { getAllStudents, getUserById, getUsersGrades, createGrade, createUser,getGradeById, updateGrade,deleteGrade,updateUser,deleteUser } from "./service.js";
+import { getAllStudents, getUserById, getUsersGrades, createGrade, createUser,getGradeById, updateGrade,deleteGrade,updateUser,deleteUser, login } from "./service.js";
 
+export function createLoginPage(){
+
+    let container = document.querySelector(".container");
+
+    
+    container.innerHTML = `
+    <div class = "main-container">
+    <div class="login-container">
+            
+    <div class="email">
+        <p >Email:</p>
+        <input type="email" name="email" id="email-login">
+    </div>
+    <div class="password">
+        <p >Password:</p>
+        <input type="password" name="password" id="password">
+    </div>
+
+    <button class="submit-login">Submit</button>
+    <button class="register-button">Register now</button>
+    </div>
+    </div>
+
+    
+    `;
+
+
+
+    let btnSubmit = document.querySelector(".submit-login");
+
+    btnSubmit.addEventListener('click', async () => {
+        const email = document.querySelector("#email-login").value;
+        const password = document.querySelector("#password").value;
+
+        const loginRequest = {
+            email: email,
+            password: password
+        }
+
+        if(email == ''){
+            alert("email is required");
+        }else if(password == ''){
+            alert("password is required");
+        }
+
+        const result = await login(loginRequest);
+        if (result.success) {
+            createHomePage();
+        } else {
+            alert("Failed to login. Please try again");
+        }
+    })
+
+}
 
 export function createHomePage() {
     loadUsers();
