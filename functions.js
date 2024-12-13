@@ -47,7 +47,17 @@ export function createLoginPage(){
 
         const result = await login(loginRequest);
         if (result.success) {
-            createHomePage();
+            const data = result.data;
+            const role = data.userRole;
+
+            if(role == 'ADMIN'){
+                createHomePage();
+            }else if( role =='CLIENT'){
+
+                const id = data.id;
+                const userData = await getUserById(id); 
+                createClientHomePage(userData);
+            }
         } else {
             alert("Failed to login. Please try again");
         }
@@ -62,6 +72,7 @@ export function createHomePage() {
     container.innerHTML = `
     <h1>Students</h1>
     <button class="add-student">Add New Student</button>
+    <button class="log-out">Logout</button>
     <table>
         <thead>
             <tr>
@@ -105,7 +116,51 @@ export function createHomePage() {
                 createGradePage(userData);
             }
         }
+
+
+        
     });
+    
+    let btnLogout = document.querySelector('.log-out');
+
+        
+    btnLogout.addEventListener('click', () => {
+        createLoginPage();
+    });
+}
+
+export function createClientHomePage(user){
+
+    let container = document.querySelector(".container");
+
+    container.innerHTML = `
+    <h1>${user.fullName}'s Grades</h1>
+
+    <button class="log-out">Log out</button>
+    <table>
+        <thead>
+            <tr>
+                <th>Grade</th>
+                <th>Feedback Title</th>
+                <th>Feedback Message</th>
+                <th>Create date</th>
+            </tr>
+        </thead>
+        <tbody class="table-body">
+        </tbody>
+    </table>
+    `;
+
+    loadClientGrades(user.id);
+
+
+    let btnLogout = document.querySelector('.log-out');
+
+        
+    btnLogout.addEventListener('click', () => {
+        createLoginPage();
+    });
+
 }
 
 
@@ -467,6 +522,8 @@ function createGradeCard(grade) {
     return tr;
 }
 
+
+
 function attachGradeCard(grades) {
     const tbody = document.querySelector(".table-body");
     grades.map(grade => createGradeCard(grade)).forEach(element => {
@@ -481,6 +538,34 @@ async function loadGrades(userId) {
         attachGradeCard(grades);
     } catch (err) {
         console.error(err);
+    }
+}
+
+function createClientGradeCard(grade) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+        <td>${grade.grade}</td>
+        <td>${grade.feedback.title}</td>
+        <td>${grade.feedback.message}</td>
+        <td>${grade.createDate}</td>
+    `;
+    return tr;
+}
+
+function attachClientGradeCard(grades) {
+    const tbody = document.querySelector(".table-body");
+    grades.map(grade => createClientGradeCard(grade)).forEach(element => {
+        tbody.appendChild(element);
+    });
+}
+
+async function loadClientGrades(userId) {
+    try {
+        let response = await getUsersGrades(userId); 
+        let grades = response.gradeResponseList; 
+        attachClientGradeCard(grades);
+    } catch (err) {
+        console.error("Error loading grades:", err);
     }
 }
 
