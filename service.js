@@ -222,6 +222,28 @@ export async function login(loginRequest){
    }
 }
 
+export async function register(userRequest){
+    try{
+
+
+        let response= await apiUser(`register`,"POST",userRequest);
+
+
+        if (response.ok) {
+           let data = await response.json();
+           return { success: true, data }; 
+       } else {
+           let error = await response.json();
+           return { success: false, message: error.message }; 
+       }
+
+   }catch(err){
+
+       return { success: false, message: "An error occurred while logging in." };
+   }
+}
+
+
 function apiUser(path, method = "GET", body = null) {
     const url = "http://localhost:8080/user/" + path;
     const options = {

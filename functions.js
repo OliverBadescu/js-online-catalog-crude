@@ -1,4 +1,4 @@
-import { getAllStudents, getUserById, getUsersGrades, createGrade, createUser,getGradeById, updateGrade,deleteGrade,updateUser,deleteUser, login } from "./service.js";
+import { getAllStudents, getUserById, getUsersGrades, createGrade, createUser,getGradeById, updateGrade,deleteGrade,updateUser,deleteUser, login , register} from "./service.js";
 
 export function createLoginPage(){
 
@@ -61,7 +61,67 @@ export function createLoginPage(){
         } else {
             alert("Failed to login. Please try again");
         }
-    })
+    });
+
+    let registerBtn = document.querySelector(".register-button");
+
+    registerBtn.addEventListener('click', () => {
+        createRegisterPage();
+
+    });
+
+}
+
+export function createRegisterPage(){
+
+    let container = document.querySelector('.container');
+
+
+    container.innerHTML = `
+    <div class = "main-container">
+    <div class="register-container">
+       
+        <div class="fullName">
+            <p >Full Name:</p>
+            <input type="name" name="fullName" id="fullName-register">
+        </div>
+        <div class="email">
+            <p >Email:</p>
+            <input type="email" name="email" id="email-register">
+        </div>
+        <div class="password">
+            <p >Password:</p>
+            <input type="password" name="password" id="password-register">
+        </div>
+        <div class="phone">
+            <p >Phone:</p>
+            <input type="number" name="phone" id="phone-register">
+        </div>
+    
+        <button class="register-button">Register</button>
+    </div>
+</div>
+    `
+
+    const registerButton = document.querySelector('.register-button');
+
+    registerButton.addEventListener('click', async () =>{
+
+        const userRequest = {
+            fullName : document.querySelector('#fullName-register').value,
+            email: document.querySelector('#email-register').value,
+            password:document.querySelector('#password-register').value,
+            phone: document.querySelector('#phone-register').value
+
+        }
+
+        const result = await register(userRequest);
+
+        alert("Succesfuly registered, please login to continue");
+
+        createLoginPage();
+
+    });
 
 }
 
@@ -571,13 +631,15 @@ async function loadClientGrades(userId) {
 
 function createUserCard(user) {
     const tr = document.createElement("tr");
-    tr.innerHTML = `
-        <td><a href="#" data-id="${user.id}" class="user-link">${user.fullName}</a></td>
-        <td>${user.email}</td>
-        <td>${user.password}</td>
-        <td>${user.phone}</td>
-        <td><a href="#" data-id="${user.id}" class="grade-link">View Grades</a></td>
-    `;
+    if(user.userRole == 'CLIENT'){
+        tr.innerHTML = `
+            <td><a href="#" data-id="${user.id}" class="user-link">${user.fullName}</a></td>
+            <td>${user.email}</td>
+            <td>${user.password}</td>
+            <td>${user.phone}</td>
+            <td><a href="#" data-id="${user.id}" class="grade-link">View Grades</a></td>
+        `;
+    }
     return tr;
 }
 
