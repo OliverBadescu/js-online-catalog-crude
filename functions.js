@@ -39,15 +39,9 @@ export function createLoginPage(){
             password: password
         }
 
-        if(email == ''){
-            alert("email is required");
-        }else if(password == ''){
-            alert("password is required");
-        }
-
         const result = await login(loginRequest);
-        if (result.success) {
-            const data = result.data;
+        if (result.status == '200') {
+            const data = result.body;
             const role = data.userRole;
 
             if(role == 'ADMIN'){
@@ -56,10 +50,21 @@ export function createLoginPage(){
 
                 const id = data.id;
                 const userData = await getUserById(id); 
-                createClientHomePage(userData);
+                createClientHomePage(userData.body);
             }
         } else {
-            alert("Failed to login. Please try again");
+            const error = document.querySelector(".login-error");
+            if(error){
+                error.remove();
+            }
+
+            const popUp = failedLogin();
+            const loginContainer = document.querySelector(".main-container");
+            if(loginContainer){
+                loginContainer.insertAdjacentElement('afterend', popUp);
+                popUp.classList.toggle("show");
+            }
+            
         }
     });
 
@@ -69,6 +74,21 @@ export function createLoginPage(){
         createRegisterPage();
 
     });
+
+}
+
+function failedLogin(){
+
+    const popUp = document.createElement("div");
+    popUp.classList.add("login-error");
+
+    popUp.innerHTML = `
+        <div class = "error-message">
+            <p>Failed to login, email or password is incorrect. <br> Please try again!</p>
+        </div>
+    `;
+
+    return popUp;
 
 }
 
@@ -116,12 +136,44 @@ export function createRegisterPage(){
         }
 
         const result = await register(userRequest);
+        console.log(result.status)
+        if (result.status == '201') {
+            alert("Successfully registered, please login to continue");
+            createLoginPage();
+          } else {
+            const error = document.querySelector(".register-error");
+            if (error) {
+              error.remove();
+            }
 
-        alert("Succesfuly registered, please login to continue");
+            const popUp = registerError();
+            const registerContainer = document.querySelector(".main-container");
 
-        createLoginPage();
+
+              
+            
+            if (registerContainer) {
+              registerContainer.insertAdjacentElement("afterend", popUp);
+              popUp.classList.toggle("show");
+            }
+          }
 
     });
+
+}
+
+function registerError(){
+
+    const popUp = document.createElement("div");
+    popUp.classList.add("register-error");
+
+  popUp.innerHTML = `
+    <div class="error-message">
+      <p class = "error-text">Failed to register. Email already used. <br> Please try again!</p>
+    </div>
+  `;
+
+  return popUp;
 
 }
 
@@ -138,7 +190,6 @@ export function createHomePage() {
             <tr>
                 <th>Full name</th>
                 <th>Email</th>
-                <th>Password</th>
                 <th>Phone Number</th>
                 <th>Grades</th>
             </tr>
@@ -161,9 +212,8 @@ export function createHomePage() {
         if (user.classList.contains("user-link")) {
             const userId = user.getAttribute("data-id"); 
             const userData = await getUserById(userId); 
-            
-            if (userData) {
-                createUpdateDeleteUserPage(userData);
+            if (userData.body) {
+                createUpdateDeleteUserPage(userData.body);
             } else {
                 alert("Failed to load user details");
             }
@@ -172,8 +222,8 @@ export function createHomePage() {
         if (user.classList.contains("grade-link")) {
             const userId = user.getAttribute("data-id"); 
             const userData = await getUserById(userId); 
-            if (userData) {
-                createGradePage(userData);
+            if (userData.body) {
+                createGradePage(userData.body);
             }
         }
 
@@ -254,22 +304,11 @@ export function createAddUserPage() {
     </div>
     `;
 
-    const inputs = {
-        fullName: document.querySelector('#fullName'),
-        email: document.querySelector('#email'),
-        password: document.querySelector('#password'),
-        phone: document.querySelector('#phone')
-    };
 
     const btnSubmit = document.querySelector('#submit');
     const errorContainer = document.querySelector('.error-container');
     const cancelBtn = document.querySelector('#cancel');
 
-    for (const key in inputs) {
-        inputs[key].addEventListener('input', () => {
-            updateErrors(inputs, errorContainer, btnSubmit);
-        });
-    }
 
 
     btnSubmit.addEventListener('click', async () => {
@@ -293,8 +332,6 @@ export function createAddUserPage() {
 
     cancelBtn.addEventListener('click', () => createHomePage());
 
-
-    updateErrors(inputs, errorContainer, btnSubmit);
 }
 
 export function createUpdateDeleteUserPage(user){
@@ -416,8 +453,8 @@ export function createGradePage(user) {
         if (grade.classList.contains("edit-grade")) {
             const gradeId = grade.getAttribute("data-id"); 
             const gradeData = await getGradeById(gradeId); 
-            if (gradeData) {
-                createUpdateGradePage(gradeData,user);
+            if (gradeData.body) {
+                createUpdateGradePage(gradeData.body,user);
             }
         }
     });
@@ -506,15 +543,15 @@ export function createAddGradePage(user) {
     <div class="create-container">
         <p>
             <label for="grade">Grade</label>
-            <input name="grade" type="number" id="grade">
+            <input name="grade" type="number" id="grade" >
         </p>
         <p>
             <label for="feedbackTitle">Feedback Title</label>
-            <input name="feedbackTitle" type="text" id="feedbackTitle">
+            <input name="feedbackTitle" type="text" maxlength="15" id="feedbackTitle">
         </p>
         <p>
             <label for="feedbackMessage">Feedback Message</label>
-            <textarea name="feedbackMessage" id="feedbackMessage"></textarea>
+            <textarea name="feedbackMessage" id="feedbackMessage" maxlength="150"></textarea>
         </p>
         <div class="buttons-container">
             <button id="submit" disabled>Submit Grade</button>
@@ -533,13 +570,20 @@ export function createAddGradePage(user) {
     const errorContainer = document.querySelector('.error-container');
     const cancelBtn = document.querySelector('#cancel');
 
-
     for (const key in inputs) {
-        inputs[key].addEventListener('input', () => {
+        inputs[key].addEventListener('input', (e) => {
+            e.preventDefault();
             updateErrors(inputs, errorContainer, btnSubmit);
         });
+
+        inputs[key].addEventListener('mousedown',()=>{
+            inputs[key].classList.add("touched");
+        })
     }
 
+    container.addEventListener("input", (event) =>{
+        event.preventDefault();
+    })
 
     btnSubmit.addEventListener('click', async () => {
 
@@ -555,7 +599,7 @@ export function createAddGradePage(user) {
         };
 
         const result = await createGrade(gradeData, user.id);
-        if (result.success) {
+        if (result.status == '201') {
             alert("Grade added successfully!");
             createGradePage(user);
         } else {
@@ -567,6 +611,7 @@ export function createAddGradePage(user) {
     cancelBtn.addEventListener('click', () => createGradePage(user));
 
     updateErrors(inputs, errorContainer, btnSubmit);
+
 }
 
 
@@ -594,11 +639,31 @@ function attachGradeCard(grades) {
 async function loadGrades(userId) {
     try {
         let response = await getUsersGrades(userId);
-        let grades = response.gradeResponseList;
-        attachGradeCard(grades);
+        let grades = response.body.gradeResponseList;
+        if (Array.isArray(grades) && grades.length > 0) {
+            attachGradeCard(grades);
+        } else {
+            attachUserHasNoGradesMessage();
+        }
     } catch (err) {
         console.error(err);
     }
+}
+
+function attachUserHasNoGradesMessage(){
+
+    let message = document.createElement("div");
+    message.classList.add("no-grades");
+
+    message.innerHTML = 
+    `
+    <p>This user has no registred grades </p>
+    
+    `;
+
+    const tbody = document.querySelector(".table-body");
+    tbody.appendChild(message);
+
 }
 
 function createClientGradeCard(grade) {
@@ -622,10 +687,15 @@ function attachClientGradeCard(grades) {
 async function loadClientGrades(userId) {
     try {
         let response = await getUsersGrades(userId); 
-        let grades = response.gradeResponseList; 
-        attachClientGradeCard(grades);
+        let grades = response.body.gradeResponseList; 
+        if (Array.isArray(grades) && grades.length > 0) {
+            attachClientGradeCard(grades);
+        } else {
+            attachUserHasNoGradesMessage();
+        }
+        
     } catch (err) {
-        console.error("Error loading grades:", err);
+        console.error(err);
     }
 }
 
@@ -635,7 +705,6 @@ function createUserCard(user) {
         tr.innerHTML = `
             <td><a href="#" data-id="${user.id}" class="user-link">${user.fullName}</a></td>
             <td>${user.email}</td>
-            <td>${user.password}</td>
             <td>${user.phone}</td>
             <td><a href="#" data-id="${user.id}" class="grade-link">View Grades</a></td>
         `;
@@ -655,13 +724,12 @@ function attachUserCard(users) {
 async function loadUsers() {
     try {
         let response = await getAllStudents();
-        let users = response.list;
+        let users = response.body.list;
         attachUserCard(users);
     } catch (err) {
         console.log(err);
     }
 }
-
 
 function updateErrors(inputs, errorContainer, btnSubmit) {
     const errors = validateInputs(inputs);
@@ -672,7 +740,7 @@ function updateErrors(inputs, errorContainer, btnSubmit) {
 function validateInputs(inputs) {
     let errors = [];
     for (const key in inputs) {
-        if (inputs[key].value.trim() === "") {
+        if (inputs[key].classList.contains("touched")&&inputs[key].value.trim() === "") {
             errors.push(`${key} is required.`);
         }
     }
@@ -682,4 +750,27 @@ function validateInputs(inputs) {
 function addErrors(errors, errorContainer, btnSubmit) {
     errorContainer.innerHTML = errors.map(error => `<p>${error}</p>`).join('');
     btnSubmit.disabled = errors.length > 0;
+}
+
+
+function checkStatusCode(code){
+
+    const statusCodes = {
+
+        200: "OK - The request was successful.",
+        201: "Created - The resource was successfully created.",
+        204: "No Content - The request was successful, but there's no content to send back.",
+        400: "Bad Request - The server couldn't understand the request.",
+        401: "Unauthorized - Authentication is required and has failed.",
+        403: "Forbidden - You don't have permission to access this resource.",
+        404: "Not Found - The requested resource could not be found.",
+        500: "Internal Server Error - Something went wrong on the server.",
+        502: "Bad Gateway - The server received an invalid response from an upstream server.",
+        503: "Service Unavailable - The server is currently unavailable."
+
+
+    }
+
+    return statusCodes[code] || "Undefiend status code";
+
 }

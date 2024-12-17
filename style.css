@@ -101,3 +101,38 @@ a{
   margin: 20px 0 10px;
 }
 
+.login-error, .register-error{
+
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: red;
+    margin: auto;
+    width: 66%;
+    position: relative;
+    
+}
+
+
+.login-error .error-message, .register-error .error-message{
+  visibility: hidden;
+  background-color: #555;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  padding: 15px;
+  border-radius: 10px;
+  
+}
+
+.login-error.show .error-message, .register-error.show .error-message {
+  visibility: visible;
+  animation: fadeIn 1s
+}
+
+
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity:1 ;}
+}

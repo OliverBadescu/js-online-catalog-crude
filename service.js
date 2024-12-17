@@ -5,12 +5,18 @@ export async function getAllStudents(){
 
 
         let response= await apiUser(`getAllUsers`);
-
         let data= await response.json();
-        return data;
+
+        return {
+             status: response.status,
+             body: data
+
+        };
+
+       
 
     }catch(err){
-        return { success: false, message: "An error occurred while getting the users." };
+        return { success: false, message: err };
 
     }
 
@@ -21,14 +27,16 @@ export async function getUserById(userId) {
 
        
         let response= await apiUser(`getUserById/${userId}`);
-        if (response.ok) {
-            return await response.json(); 
-        } else {
-            return { success: false, message: "Failed to fetch user data." };
-        }
+        let data= await response.json();
+
+        return {
+            status: response.status,
+            body: data
+
+       };
 
     }catch(err){
-        return { success: false, message: "An error occurred while getting the user data." };
+        return { success: false, message: err };
 
     }
 
@@ -40,14 +48,17 @@ export async function getUsersGrades(userId) {
 
        
         let response= await apiGrade(`getAllUserGrades/${userId}`);
-        if (response.ok) {
-            return await response.json(); 
-        } else {
-            return { success: false, message: "Failed to fetch user grades." };
-        }
+        let data= await response.json();
+
+        return {
+            status: response.status,
+            body: data
+
+       };
 
     }catch(err){
-        return { success: false, message: "An error occurred while getting the user grades." };
+
+        return { success: false, message: err };
 
     }
 
@@ -60,19 +71,17 @@ export async function createGrade(grade,userId){
 
 
         let response= await apiGrade(`add/${userId}`,"POST",grade);
+        let data= await response.json();
 
+        return {
+            status: response.status,
+            body: data
 
-        if (response.ok) {
-           let data = await response.json();
-           return { success: true, data }; 
-       } else {
-           let error = await response.json();
-           return { success: false, message: error.message }; 
-       }
+       };
 
    }catch(err){
 
-       return { success: false, message: "An error occurred while creating the grade." };
+       return { success: false, message: err };
    }
 
 }
@@ -85,18 +94,17 @@ export async function createUser(user){
 
         let response= await apiUser("add","POST",user);
 
+        let data= await response.json();
 
-        if (response.ok) {
-           let data = await response.json();
-           return { success: true, data }; 
-       } else {
-           let error = await response.json();
-           return { success: false, message: error.message }; 
-       }
+        return {
+            status: response.status,
+            body: data
+
+       };
 
    }catch(err){
 
-       return { success: false, message: "An error occurred while creating the user." };
+       return { success: false, message: err };
    }
 }
 
@@ -107,18 +115,17 @@ export async function updateUser(userId,user){
 
         let response= await apiUser(`update/${userId}`,"PUT",user);
 
+        let data= await response.json();
 
-        if (response.ok) {
-           let data = await response.json();
-           return { success: true, data }; 
-       } else {
-           let error = await response.json();
-           return { success: false, message: error.message }; 
-       }
+        return {
+            status: response.status,
+            body: data
+
+       };
 
    }catch(err){
 
-       return { success: false, message: "An error occurred while updating the user." };
+       return { success: false, message: err };
    }
 }
 
@@ -129,19 +136,17 @@ export async function deleteUser(userId){
 
 
         let response= await apiUser(`delete/${userId}`,"DELETE");
+        let data= await response.json();
 
+        return {
+            status: response.status,
+            body: data
 
-        if (response.ok) {
-           let data = await response.json();
-           return { success: true, data }; 
-       } else {
-           let error = await response.json();
-           return { success: false, message: error.message }; 
-       }
+       };
 
    }catch(err){
 
-       return { success: false, message: "An error occurred while deleting the user." };
+       return { success: false, message: err };
    }
 }
 
@@ -151,14 +156,15 @@ export async function getGradeById(gradeId){
 
        
         let response= await apiGrade(`getGradeById/${gradeId}`);
-        if (response.ok) {
-            return await response.json(); 
-        } else {
-            return { success: false, message: "Failed to fetch user data." };
-        }
+        let data= await response.json();
 
+        return {
+            status: response.status,
+            body: data
+
+       };
     }catch(err){
-        return { success: false, message: "An error occurred while getting the grade data." };
+        return { success: false, message: err };
 
     }
 }
@@ -169,14 +175,16 @@ export async function updateGrade(gradeId,gradeResponse){
 
        
         let response= await apiGrade(`update/${gradeId}`, "PUT", gradeResponse);
-        if (response.ok) {
-            return await response.json(); 
-        } else {
-            return { success: false, message: "Failed to fetch user data." };
-        }
+        let data= await response.json();
+
+        return {
+            status: response.status,
+            body: data
+
+       };
 
     }catch(err){
-        return { success: false, message: "An error occurred while getting the grade data." };
+        return { success: false, message: err };
 
     }
 
@@ -188,14 +196,16 @@ export async function deleteGrade(gradeId){
 
        
         let response= await apiGrade(`delete/${gradeId}`, "DELETE");
-        if (response.ok) {
-            return await response.json(); 
-        } else {
-            return { success: false, message: "Failed to fetch user data." };
-        }
+        let data= await response.json();
+
+        return {
+            status: response.status,
+            body: data
+
+       };
 
     }catch(err){
-        return { success: false, message: "An error occurred while getting the grade data." };
+        return { success: false, message: err };
 
     }
 
@@ -205,20 +215,21 @@ export async function login(loginRequest){
     try{
 
 
-        let response= await apiUser(`login`,"POST",loginRequest);
+        let response= await apiUser(`login`,"POST",loginRequest)
 
 
-        if (response.ok) {
-           let data = await response.json();
-           return { success: true, data }; 
-       } else {
-           let error = await response.json();
-           return { success: false, message: error.message }; 
-       }
+        let data= await response.json();
+
+
+        return {
+            status: response.status,
+            body: data
+
+       };
 
    }catch(err){
 
-       return { success: false, message: "An error occurred while logging in." };
+       return { success: false, message: err };
    }
 }
 
@@ -227,19 +238,18 @@ export async function register(userRequest){
 
 
         let response= await apiUser(`register`,"POST",userRequest);
+        let data= await response.json();
 
 
-        if (response.ok) {
-           let data = await response.json();
-           return { success: true, data }; 
-       } else {
-           let error = await response.json();
-           return { success: false, message: error.message }; 
-       }
+        return {
+            status: response.status,
+            body: data
+
+       };
 
    }catch(err){
 
-       return { success: false, message: "An error occurred while logging in." };
+       return { success: false, message: err };
    }
 }
 
