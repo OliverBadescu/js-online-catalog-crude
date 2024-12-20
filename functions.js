@@ -460,79 +460,89 @@ export function createGradePage(user) {
     });
 }
 
-export function createUpdateGradePage(grade,user){
-
+export function createUpdateGradePage(grade, user) {
     let container = document.querySelector(".container");
 
     container.innerHTML = `
-    
     <h1>Update Grade</h1>
-    <div class = "update-container">
+    <div class="error-container"></div> <!-- Added error container -->
+    <div class="update-container">
         <p>
             <label for="grade">Grade</label>
             <input name="grade" type="number" id="grade" value=${grade.grade}>
         </p>
         <p>
-            <label for="title">Feedback title</label>
-            <input name="title" type="text" id="title" value=${grade.feedback.title}>
+            <label for="title">Feedback Title</label>
+            <input name="title" type="text" maxlength="15" id="title" value=${grade.feedback.title}>
         </p>
         <p>
-            <label for="message">Feedback message</label>
-            <input name="message" type="text" id="message" value=${grade.feedback.message}>
+            <label for="message">Feedback Message</label>
+            <input name="message" type="text" maxlength="150" id="message" value=${grade.feedback.message}>
         </p>
-        <div class = "buttons-container">
-        <button id="update-grade">Update Grade</button>
-        <button id="cancel">Cancel</button>
-        <button id="delete">Delete Grade</button>
+        <div class="buttons-container">
+            <button id="update-grade">Update Grade</button>
+            <button id="cancel">Cancel</button>
+            <button id="delete">Delete Grade</button>
         </div>
     </div>
+    `;
 
-    `
+    const inputs = {
+        grade: document.querySelector('#grade'),
+        feedbackTitle: document.querySelector('#title'),
+        feedbackMessage: document.querySelector('#message')
+    };
+
+    const errorContainer = document.querySelector('.error-container');
+    const btnSubmit = document.querySelector('#update-grade'); 
+
+
+    limitGradeInput(inputs.grade, errorContainer);
+
+    for (const key in inputs) {
+        inputs[key].addEventListener('input', (e) => {
+            e.preventDefault();
+            updateErrors(inputs, errorContainer, btnSubmit);
+        });
+
+        inputs[key].addEventListener('mousedown', () => {
+            inputs[key].classList.add("touched");
+        });
+    }
 
     let cancel = document.querySelector('#cancel');
-
-    cancel.addEventListener('click', () =>{
-
+    cancel.addEventListener('click', () => {
         createGradePage(user);
     });
 
     let update = document.querySelector('#update-grade');
-
-
-    update.addEventListener('click', () =>{
-
-        const gradeValue = document.querySelector('#grade').value;
+    update.addEventListener('click', () => {
+        const gradeValue = inputs.grade.value;
         const feedbackData = {
-            title: document.querySelector('#title').value,
-            message: document.querySelector('#message').value
+            title: inputs.feedbackTitle.value,
+            message: inputs.feedbackMessage.value
         };
 
         const gradeResponse = {
-
             grade: gradeValue,
             feedback: feedbackData
         };
 
-
         updateGrade(grade.id, gradeResponse);
-
-
-
-        alert("Grade update sucessfully");
+        alert("Grade updated successfully");
         createGradePage(user);
-
     });
 
     let deleteBtn = document.querySelector('#delete');
-
-    deleteBtn.addEventListener('click', () =>{
-
+    deleteBtn.addEventListener('click', () => {
         deleteGrade(grade.id);
-        alert("Grade deleted succesfully!");
+        alert("Grade deleted successfully!");
         createGradePage(user);
     });
 
+    updateErrors(inputs, errorContainer, btnSubmit);
 }
+
 
 export function createAddGradePage(user) {
     let container = document.querySelector(".container");
@@ -547,7 +557,7 @@ export function createAddGradePage(user) {
         </p>
         <p>
             <label for="feedbackTitle">Feedback Title</label>
-            <input name="feedbackTitle" type="text" maxlength="15" id="feedbackTitle">
+            <input name="feedbackTitle" type="text" maxlength="10" id="feedbackTitle">
         </p>
         <p>
             <label for="feedbackMessage">Feedback Message</label>
@@ -569,6 +579,9 @@ export function createAddGradePage(user) {
     const btnSubmit = document.querySelector('#submit');
     const errorContainer = document.querySelector('.error-container');
     const cancelBtn = document.querySelector('#cancel');
+
+
+    limitGradeInput(inputs.grade, errorContainer);
 
     for (const key in inputs) {
         inputs[key].addEventListener('input', (e) => {
@@ -773,4 +786,22 @@ function checkStatusCode(code){
 
     return statusCodes[code] || "Undefiend status code";
 
+}
+
+function limitGradeInput(inputElement, errorContainer) {
+    inputElement.addEventListener('input', () => {
+        const value = parseFloat(inputElement.value);
+
+        if (value < 1 || value > 10 || isNaN(value)) {
+            errorContainer.textContent = "Grade must be between 1 and 10.";
+            inputElement.classList.add('error');
+        } else {
+            errorContainer.textContent = ""; 
+            inputElement.classList.remove('error');
+        }
+
+        
+        if (value < 1) inputElement.value = 1;
+        if (value > 10) inputElement.value = 10;
+    });
 }
