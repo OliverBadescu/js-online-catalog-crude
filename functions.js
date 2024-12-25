@@ -247,6 +247,8 @@ export function createClientHomePage(user){
     <h1>${user.fullName}'s Grades</h1>
 
     <button class="log-out">Log out</button>
+    <button class="media">Calculeaza media</button>
+    <div class ="media-rez"></div>
     <table>
         <thead>
             <tr>
@@ -269,6 +271,17 @@ export function createClientHomePage(user){
         
     btnLogout.addEventListener('click', () => {
         createLoginPage();
+    });
+
+    let btnMedia = document.querySelector('.media');
+    const containerMedia = document.querySelector('.media-rez');
+
+    btnMedia.addEventListener('click',async () =>{
+        let media = await calculateMedia(user.id);
+        containerMedia.innerHTML = 
+        `
+        <p>Media este: ${media}</p>
+        `;
     });
 
 }
@@ -627,11 +640,10 @@ export function createAddGradePage(user) {
 
 }
 
-
 function createGradeCard(grade) {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-        <td>${grade.grade}</td>
+        <td id = "grade-row">${grade.grade}</td>
         <td>${grade.feedback.title}</td>
         <td>${grade.feedback.message}</td>
         <td>${grade.createDate}</td>
@@ -639,8 +651,6 @@ function createGradeCard(grade) {
     `;
     return tr;
 }
-
-
 
 function attachGradeCard(grades) {
     const tbody = document.querySelector(".table-body");
@@ -749,7 +759,6 @@ function updateErrors(inputs, errorContainer, btnSubmit) {
     addErrors(errors, errorContainer, btnSubmit);
 }
 
-
 function validateInputs(inputs) {
     let errors = [];
     for (const key in inputs) {
@@ -804,4 +813,26 @@ function limitGradeInput(inputElement, errorContainer) {
         if (value < 1) inputElement.value = 1;
         if (value > 10) inputElement.value = 10;
     });
+}
+
+async function calculateMedia(userId){
+
+    try {
+        let response = await getUsersGrades(userId);
+        let grades = response.body.gradeResponseList;
+        if (Array.isArray(grades) && grades.length > 0) {
+            let sum =0;
+
+            for(let i =0; i < grades.length; i++){
+                sum+= grades[i].grade;
+            }
+            return sum/grades.length;
+        } else {
+            attachUserHasNoGradesMessage();
+        }
+    } catch (err) {
+        console.error(err);
+    }
+
+
 }
