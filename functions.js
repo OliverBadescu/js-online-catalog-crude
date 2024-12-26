@@ -247,8 +247,10 @@ export function createClientHomePage(user){
     <h1>${user.fullName}'s Grades</h1>
 
     <button class="log-out">Log out</button>
-    <button class="media">Calculeaza media</button>
+    <button class="media">Calculate grade point average</button>
+    <button class="min-grades">Grades needed for grade point average 5</button>
     <div class ="media-rez"></div>
+    <div class="min-grades-rez"></div>
     <table>
         <thead>
             <tr>
@@ -280,8 +282,19 @@ export function createClientHomePage(user){
         let media = await calculateMedia(user.id);
         containerMedia.innerHTML = 
         `
-        <p>Media este: ${media}</p>
+        <p>Grade point average is: ${media}</p>
         `;
+    });
+
+    let btnMinGrades = document.querySelector('.min-grades');
+    const containerMinGrades = document.querySelector('.min-grades-rez');
+    btnMinGrades.addEventListener('click', async () => {
+        let neededGrades = await calculateGradesNeededForMedian(user.id);
+        if (neededGrades.length === 0) {
+            containerMinGrades.innerHTML = "<p>You already have a GPA of 5 or more.</p>";
+        } else {
+            containerMinGrades.innerHTML = `<p>Grades needed to reach a GPA of 5: ${neededGrades.join(", ")}</p>`;
+        }
     });
 
 }
@@ -555,7 +568,6 @@ export function createUpdateGradePage(grade, user) {
 
     updateErrors(inputs, errorContainer, btnSubmit);
 }
-
 
 export function createAddGradePage(user) {
     let container = document.querySelector(".container");
@@ -835,4 +847,41 @@ async function calculateMedia(userId){
     }
 
 
+}
+
+
+async function calculateGradesNeededForMedian(userId) {
+    try {
+        let response = await getUsersGrades(userId);
+        let grades = response.body.gradeResponseList;
+
+        if (!grades || grades.length === 0) {
+            return [];
+        }
+
+        let currentSum = 0;
+        let currentGradeCount = grades.length;
+        grades.forEach(grade => currentSum += grade.grade);
+
+        let currentGPA = currentSum / currentGradeCount;
+
+        if (currentGPA >= 5) {
+            return []; 
+        }
+
+        let requiredSum = 5 * (currentGradeCount + 1);
+
+        let missingGrade = requiredSum - currentSum;
+
+
+        if (missingGrade > 10) {
+            return []; 
+        }
+
+        return [Math.ceil(missingGrade)]; 
+
+    } catch (err) {
+        console.error(err);
+        return [];
+    }
 }
