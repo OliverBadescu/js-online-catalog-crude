@@ -309,15 +309,15 @@ export function createAddUserPage() {
     <div class="create-container">
         <p>
             <label for="fullName">Full Name</label>
-            <input name="fullName" type="text" id="fullName">
+            <input name="fullName" type="text" maxlength="15" id="fullName">
         </p>
         <p>
             <label for="email">Email</label>
-            <input name="email" type="email" id="email">
+            <input name="email" type="email" maxlength="30" id="email">
         </p>
         <p>
             <label for="password">Password</label>
-            <input name="password" type="password" id="password">
+            <input name="password" type="password" maxlength="15" id="password">
         </p>
         <p>
             <label for="phone">Phone</label>
@@ -330,12 +330,31 @@ export function createAddUserPage() {
     </div>
     `;
 
+    const inputs = {
+        fullName: document.querySelector('#fullName'),
+        email: document.querySelector('#email'),
+        password: document.querySelector('#password'),
+        phone: document.querySelector('#phone')
+    };
 
     const btnSubmit = document.querySelector('#submit');
     const errorContainer = document.querySelector('.error-container');
     const cancelBtn = document.querySelector('#cancel');
 
+    for (const key in inputs) {
+        inputs[key].addEventListener('input', (e) => {
+            e.preventDefault();
+            updateErrors(inputs, errorContainer, btnSubmit);
+        });
 
+        inputs[key].addEventListener('mousedown', () => {
+            inputs[key].classList.add("touched");
+        });
+    }
+
+    container.addEventListener("input", (event) => {
+        event.preventDefault();
+    });
 
     btnSubmit.addEventListener('click', async () => {
         const userData = {
@@ -344,7 +363,6 @@ export function createAddUserPage() {
             password: inputs.password.value,
             phone: inputs.phone.value
         };
-
 
         const result = await createUser(userData);
         if (result.success) {
@@ -355,9 +373,9 @@ export function createAddUserPage() {
         }
     });
 
-
     cancelBtn.addEventListener('click', () => createHomePage());
 
+    updateErrorsUser(inputs, errorContainer, btnSubmit);
 }
 
 export function createUpdateDeleteUserPage(user){
@@ -884,4 +902,28 @@ async function calculateGradesNeededForMedian(userId) {
         console.error(err);
         return [];
     }
+}
+
+function updateErrorsUser(inputs, errorContainer, btnSubmit) {
+    let errors = [];
+
+    if (!inputs.fullName.value.trim()) {
+        errors.push("Full Name is required.");
+    }
+
+    if (!inputs.email.value.trim() || !inputs.email.value.includes("@")) {
+        errors.push("A valid Email is required.");
+    }
+
+    if (!inputs.password.value.trim()) {
+        errors.push("Password is required.");
+    }
+
+    if (!inputs.phone.value.trim() || isNaN(inputs.phone.value)) {
+        errors.push("A valid Phone number is required.");
+    }
+
+    errorContainer.innerHTML = errors.map(err => `<p class='error'>${err}</p>`).join('');
+
+    btnSubmit.disabled = errors.length > 0;
 }

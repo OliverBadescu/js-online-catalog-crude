@@ -98,8 +98,8 @@ export async function createUser(user){
 
         return {
             status: response.status,
-            body: data
-
+            body: data,
+            success:true
        };
 
    }catch(err){
